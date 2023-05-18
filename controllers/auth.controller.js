@@ -85,4 +85,12 @@ export const logout = expressAsyncHandler(async (req, res, next) => {
 // export const refreshToken = expressAsyncHandler(() => {});
 export const resetPassword = expressAsyncHandler(() => {});
 // export const verifyToken = expressAsyncHandler(() => {});
-// export const verifyUser = expressAsyncHandler(() => {});
+export const verifyUser = expressAsyncHandler(async (req, res, next) => {
+  const user = req.user;
+
+  if (!user) return next(createError(401, "User verification failed."));
+
+  const { isActive, ...userData } = user;
+
+  return sendResponse(req, res, 200, true, "success", userData);
+});

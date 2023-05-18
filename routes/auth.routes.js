@@ -5,6 +5,7 @@ import {
   loginUser,
   logout,
   resetPassword,
+  verifyUser,
 } from "../controllers/auth.controller.js";
 import { onlyAuthorized } from "../middleware/authHandler.js";
 
@@ -16,6 +17,7 @@ router.put("/reset-password", resetPassword);
 // router.get("/refreshToken", refreshToken);
 // router.get("/verifyToken", verifyToken);
 // router.get("/verifyUser", onlyAuthorized, verifyUser);
+router.get("/verify-user", verifyUser);
 router.get("/logout", logout);
 
 export default router;

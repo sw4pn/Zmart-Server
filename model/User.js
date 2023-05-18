@@ -44,8 +44,18 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     cart: {
-      type: Array,
-      default: [],
+      products: [
+        {
+          product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+          count: { type: Number, default: 0 },
+          color: { type: mongoose.Schema.Types.ObjectId, ref: "Color" },
+          variant: { type: Array },
+          price: { type: Number },
+          finalPrice: { type: Number },
+        },
+      ],
+      totalPrice: { type: Number },
+      totalAfterDiscount: { type: Number },
     },
     address: {
       type: Object,
