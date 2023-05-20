@@ -94,3 +94,7 @@ export const verifyUser = expressAsyncHandler(async (req, res, next) => {
 
   return sendResponse(req, res, 200, true, "success", userData);
 });
+
+export const sendMail = expressAsyncHandler(async (req, res, next) => {
+  return sendResponse(req, res, 200, true, "Message Sent successfully", {});
+});

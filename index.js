@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // import { fileURLToPath } from "url";
 // import path, { dirname } from "path";
@@ -11,6 +12,7 @@ import corsOptions from "./config/corsOptions.js";
 
 import { default as authRouter } from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
+import categoryRouter from "./routes/category.routes.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -21,9 +23,11 @@ connectDB();
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/categories", categoryRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
