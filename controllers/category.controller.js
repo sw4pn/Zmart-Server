@@ -102,7 +102,7 @@ export const getCategory = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const getAllCategories = expressAsyncHandler(async (req, res, next) => {
-  const categories = await Category.find({ status: true }).lean();
+  const categories = await Category.find({ status: true }).lean().exec();
 
   if (categories)
     return sendResponse(req, res, 200, true, "success", categories);
