@@ -1,7 +1,5 @@
-import mongoose, { model } from "mongoose";
-import mongooseSequence from "mongoose-sequence";
-
-const AutoIncrement = mongooseSequence(mongoose);
+import mongoose from "mongoose";
+// import mongooseSequence from "mongoose-sequence";
 
 const productSchema = new mongoose.Schema(
   {
@@ -94,8 +92,7 @@ const productSchema = new mongoose.Schema(
     ],
     specification: {
       model: {
-        number: String,
-        name: String,
+        type: { number: String, name: String },
       },
       os: String,
       processor: String,
@@ -133,9 +130,9 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-productSchema.plugin(AutoIncrement, {
-  inc_field: "pid",
-  start_seq: 1000,
-});
+// productSchema.plugin(mongooseSequence(mongoose), {
+//   inc_field: "pid",
+//   start_seq: 1000,
+// });
 
-export default model("Product", productSchema);
+export default mongoose.model("Product", productSchema);

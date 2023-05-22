@@ -71,13 +71,25 @@ export const logout = expressAsyncHandler(async (req, res, next) => {
     secure: true,
     sameSite: "None",
   });
-  if (!removedCookie)
+  if (!removedCookie) {
+    const setCookie = res.cookie("accessToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 1,
+      sameSite: "None",
+      secure: true,
+      path: "/",
+    });
+
+    if (setCookie)
+      return sendResponse(req, res, 200, true, "User logged out successfully.");
+
     return next(
       createError(401, "User not available. Please clear your cookies.")
     );
+  }
 
   if (removedCookie && user)
-    return sendResponse(req, res, 200, true, "User logged out successfully.");
+    return sendResponse(req, res, 200, true, "Logged out successfully.");
 
   return next(createError(204, "Forbidden."));
 });

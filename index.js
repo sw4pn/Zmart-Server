@@ -12,8 +12,11 @@ import corsOptions from "./config/corsOptions.js";
 
 import { default as authRouter } from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
+import productRouter from "./routes/product.routes.js";
 import categoryRouter from "./routes/category.routes.js";
 import brandRouter from "./routes/brand.routes.js";
+import colorRouter from "./routes/color.routes.js";
+import couponRouter from "./routes/coupon.routes.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -28,8 +31,11 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+app.use("/api/products", productRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/brands", brandRouter);
+app.use("/api/colors", colorRouter);
+app.use("/api/coupons", couponRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
