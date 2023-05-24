@@ -119,10 +119,12 @@ const productSchema = new mongoose.Schema(
       brightness: String,
       size: String,
       audioJack: String,
-      extra: {
-        name: String,
-        feature: String,
-      },
+      extra: [
+        {
+          name: String,
+          feature: String,
+        },
+      ],
     },
   },
   {

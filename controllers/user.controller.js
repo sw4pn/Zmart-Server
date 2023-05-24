@@ -226,10 +226,10 @@ export const unblockUser = expressAsyncHandler(async (req, res, next) => {
 export const getWishlist = expressAsyncHandler(async (req, res, next) => {
   const { id } = req.user;
 
-  const findUser = await User.findById(id).lean().populate("wishlist");
+  const findUser = await User.findById(id).lean().populate("wishlist").lean();
 
   if (findUser)
-    return sendResponse(req, res, 200, true, "success", findUser._doc.wishlist);
+    return sendResponse(req, res, 200, true, "success", findUser.wishlist);
 
   return next(createError(400, "Unknown error."));
 });

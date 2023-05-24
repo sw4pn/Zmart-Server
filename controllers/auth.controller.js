@@ -5,6 +5,7 @@ import User from "../model/User.js";
 import { createError } from "../middleware/errorHandler.js";
 import generateRefreshToken from "../config/refreshToken.js";
 import sendResponse from "../utils/responseHandler.js";
+import { sendEmail } from "../utils/emailHandler.js";
 
 export const loginUser = expressAsyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -56,7 +57,47 @@ export const loginUser = expressAsyncHandler(async (req, res, next) => {
   return next(createError(400, "Wrong email or password."));
 });
 
-export const forgotPassword = expressAsyncHandler(() => {});
+export const forgotPassword = expressAsyncHandler(async (req, res, next) => {
+  const email = req.body.email;
+
+  const user = await User.findOne({ email: email }).lean();
+
+  if (!user)
+    return next(createError(400, "No user exist with this email address."));
+
+  // const updateToken = await User.findByIdAndUpdate(
+  //   user._id,
+  //   {
+  //     passwordResetToken,
+  //     passwordResetExpires,
+  //   },
+  //   { new: true }
+  // );
+
+  const resetToken = await User.getResetPasswordToken();
+
+  if (!resetToken) return next(createError(400, "Error updating token"));
+
+  const htmlMessage = `<p>Hi, you have requested to reset your password, if this is not you, ignore this message.</p>
+<p>
+
+Please follow the link to reset your password. 
+The link is valid for 10 minutes from now. <a href="http://localhost:5173/reset-password/${resetToken}">Click Here</a>
+</p>
+`;
+
+  const data = {
+    to: email,
+    subject: "Forgot password | zmart",
+    html: htmlMessage,
+    text: `Hey ${user.firstName} ${user.lastName}`,
+  };
+
+  if (sendEmail(data))
+    return sendResponse(req, res, 200, true, "Email sent successfully.");
+
+  return next(createError(400, "Error sending email."));
+});
 
 export const logout = expressAsyncHandler(async (req, res, next) => {
   const cookie = req.cookies;
@@ -95,7 +136,30 @@ export const logout = expressAsyncHandler(async (req, res, next) => {
 });
 
 // export const refreshToken = expressAsyncHandler(() => {});
-export const resetPassword = expressAsyncHandler(() => {});
+export const resetPassword = expressAsyncHandler(async (req, res, next) => {
+  const { token } = req.params;
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return next(createError(400, "Token expired, Please try again."));
+
+  user.password = hashedToken;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  user.passwordChangedAt = Date.now();
+
+  const saveUser = await user.save();
+
+  if (saveUser) return sendResponse(req, res, 200, true, "success", user);
+
+  return next(createError(400, "Error updating password, please try again."));
+});
+
 // export const verifyToken = expressAsyncHandler(() => {});
 export const verifyUser = expressAsyncHandler(async (req, res, next) => {
   const user = req.user;
@@ -105,8 +169,4 @@ export const verifyUser = expressAsyncHandler(async (req, res, next) => {
   const { isActive, ...userData } = user;
 
   return sendResponse(req, res, 200, true, "success", userData);
-});
-
-export const sendMail = expressAsyncHandler(async (req, res, next) => {
-  return sendResponse(req, res, 200, true, "Message Sent successfully", {});
 });

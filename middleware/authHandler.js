@@ -24,6 +24,9 @@ export const onlyAuthorized = expressAsyncHandler(async (req, res, next) => {
   } else {
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET_KEY);
 
+    if (!decoded)
+      return next(createError(401, "Token expired! Please login again."));
+
     const user = await User.findById(decoded?.id).lean();
 
     if (!user) {

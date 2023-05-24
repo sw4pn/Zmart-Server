@@ -17,6 +17,9 @@ import categoryRouter from "./routes/category.routes.js";
 import brandRouter from "./routes/brand.routes.js";
 import colorRouter from "./routes/color.routes.js";
 import couponRouter from "./routes/coupon.routes.js";
+import uploadRouter from "./routes/upload.routes.js";
+import orderRouter from "./routes/order.routes.js";
+import cartRouter from "./routes/cart.routes.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -36,9 +39,16 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/brands", brandRouter);
 app.use("/api/colors", colorRouter);
 app.use("/api/coupons", couponRouter);
+app.use("/api/uploads", uploadRouter);
+app.use("/api/orders", orderRouter);
+app.use("/api/carts", cartRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+const server = app.listen(PORT, () => {
+  console.log("Server is listening on port: " + PORT);
+});
 
 //unhandled promise rejection
 process.on("unhandledRejection", (err) => {
@@ -57,8 +67,4 @@ process.on("uncaughtException", (err) => {
   server.close(() => {
     process.exit(1);
   });
-});
-
-app.listen(PORT, () => {
-  console.log("Server is listening on port: " + PORT);
 });

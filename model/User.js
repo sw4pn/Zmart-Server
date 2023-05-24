@@ -47,9 +47,9 @@ const userSchema = new mongoose.Schema(
       products: [
         {
           product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-          count: { type: Number, default: 0 },
+          quantity: { type: Number, default: 0 },
           color: { type: mongoose.Schema.Types.ObjectId, ref: "Color" },
-          variant: { type: Array },
+          variant: String,
           price: { type: Number },
           finalPrice: { type: Number },
         },

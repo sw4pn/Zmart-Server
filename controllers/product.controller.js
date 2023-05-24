@@ -33,9 +33,19 @@ export const createProduct = expressAsyncHandler(async (req, res, next) => {
     });
   }
 
-  req.body.category = await Category.findOne({ title: req.body.category });
-  req.body.brand = await Brand.findOne({ title: req.body.brand });
-  req.body.color = await Color.findOne({ title: req.body.color });
+  req.body.category = await Category.findOne({
+    title: req.body.category,
+  }).select("id");
+  req.body.brand = await Brand.findOne({ title: req.body.brand }).select("id");
+
+  if (req.body.color) {
+    const arr = [];
+    for (const color of req.body.color) {
+      const col = await Color.findOne({ title: color }).lean();
+      arr.push(col._id);
+    }
+    req.body.color = arr;
+  }
 
   const product = await Product.findOne({
     title: req.body.title,
@@ -67,20 +77,32 @@ export const createProduct = expressAsyncHandler(async (req, res, next) => {
 export const updateProduct = expressAsyncHandler(async (req, res, next) => {
   const id = req.params.id;
 
-  // if (req.body.title) {
-  //   req.body.slug = slugify(req.body.title, {
-  //     lower: true,
-  //     locale: "en",
-  //   });
-  // }
+  if (req.body.category) {
+    req.body.category = await Category.findOne({
+      title: req.body.category,
+    });
+  }
+
+  if (req.body.brand) {
+    req.body.brand = await Brand.findOne({ title: req.body.brand });
+  }
+
+  if (req.body.color) {
+    const arr = [];
+    for (const color of req.body.color) {
+      const col = await Color.findOne({ title: color }).select("id");
+      arr.push(col);
+    }
+    req.body.color = arr;
+  }
 
   const updatedProduct = await Product.findByIdAndUpdate(
     id,
     {
       $set: req.body,
     },
-    { new: true }
-  ).lean();
+    { new: true, lean: true }
+  );
 
   if (updatedProduct)
     return sendResponse(

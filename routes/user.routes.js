@@ -9,6 +9,7 @@ import {
   updateUser,
   blockUser,
   unblockUser,
+  getWishlist,
 } from "../controllers/user.controller.js";
 import { onlyAdmin, onlyAuthorized } from "../middleware/authHandler.js";
 
@@ -21,7 +22,7 @@ router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
 router.get("/:id/unblock-user", onlyAuthorized, onlyAdmin, unblockUser);
 router.get("/:id/block-user", onlyAuthorized, onlyAdmin, blockUser);
-// router.get("/wishlist", authMiddleware, getWishlist);
+router.get("/wishlist", onlyAuthorized, getWishlist);
 // router.get("/:id", authMiddleware, adminMiddleware, getUser);
 router.get("/:id", getUser);
 router.get("/", onlyAuthorized, onlyAdmin, getAllUsers);
