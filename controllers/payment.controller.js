@@ -1,10 +1,12 @@
-const expressAsyncHandler = require("express-async-handler");
+import expressAsyncHandler from "express-async-handler";
 import dotenv from "dotenv";
+import crypto from "crypto";
 import Razorpay from "razorpay";
 import Order from "../model/Order.js";
 import { createError } from "../middleware/errorHandler.js";
-import sendResponse from "../utils/responseHandler";
+import sendResponse from "../utils/responseHandler.js";
 import { validateMongoId } from "../utils/validateMongoId.js";
+import stripe from "stripe";
 
 dotenv.config();
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY;
@@ -33,13 +35,13 @@ export const generateOrderId = expressAsyncHandler(async (req, res, next) => {
 
   if (!order) return next(createError(400, "Order not found."));
 
-  const totalAmount = order.finalAmount;
+  const totalAmount = Math.ceil(order.finalAmount * 100);
 
   // order creation
   var options = {
     amount: totalAmount, // amount in the smallest currency unit
     currency: "INR",
-    receipt: "order_rcptid_11",
+    receipt: "order_rcptid_",
     notes: {
       user: userId,
       orderId: orderId,
@@ -48,48 +50,86 @@ export const generateOrderId = expressAsyncHandler(async (req, res, next) => {
 
   instance.orders.create(options, async function (err, order) {
     console.log(err);
-    if (err) return next(createError(400, "Order Creaetion failed."));
+    if (err) return next(createError(400, "Order Creation failed." + err));
 
     const updateOrder = await Order.findByIdAndUpdate(
       orderId,
-      { $set: { "paymentInfo.razorpay": { order: order } } },
+      {
+        $set: {
+          "paymentInfo.razorpay": { order: order },
+          "paymentInfo.status": "Payment Initiated",
+        },
+      },
       { new: true }
     );
 
-    return sendResponse(req, res, 200, true, "success", order);
+    if (updateOrder) return sendResponse(req, res, 200, true, "success", order);
+
+    return next(createError(400, "Payment Not initialized."));
   });
 });
 
 export const verifyPayment = expressAsyncHandler(async (req, res, next) => {
-  const order_id = req.body.order_id;
+  const order_id = req.body.orderId;
 
-  let body =
-    req.body.response.razorpay_order_id +
-    "|" +
-    req.body.response.razorpay_payment_id;
+  let body = req.body.razorpayOrderId + "|" + req.body.razorpayPaymentId;
 
   const expectedSignature = crypto
     .createHmac("sha256", KEY_SECRET)
     .update(body.toString())
     .digest("hex");
 
-  console.log("sig received: " + req.body.response.razorpay_signature);
+  console.log("sig received: " + req.body.razorpaySignature);
   console.log("sig generated: " + expectedSignature);
 
-  const response = { signatureIsValid: "false" };
+  const response = { signatureIsValid: false };
 
-  if (expectedSignature === req.body.response.razorpay_signature) {
-    response = { signatureIsValid: "true" };
+  if (expectedSignature === req.body.razorpaySignature) {
+    response.signatureIsValid = true;
 
-    const updateOrder = await Order.findByIdAndUpdate(
-      order_id,
-      {
-        $set: { status: "Paid", "paymentInfo.razorpay": { verified: true } },
-      },
-      { new: true }
-    );
+    const findOrder = await Order.findById(order_id);
 
-    return sendResponse(req, res, 200, true, "success", response);
+    // order: {
+    //   id: String,
+    //   entity: String,
+    //   amount: Number,
+    //   amount_paid: Number,
+    //   amount_due: Number,
+    //   currency: String,
+    //   receipt: String,
+    //   status: String,
+    //   attempts: Number,
+    //   notes: [],
+    //   created_at: Number,
+    // },
+    // razOrderId: { type: String },
+    // razPaymentId: { type: String },
+    // verified: { type: Boolean },
+    if (findOrder) {
+      findOrder.paymentInfo.status = "Paid";
+      findOrder.paymentInfo.razorpay = {
+        order: findOrder.paymentInfo.order,
+        razOrderId: findOrder.paymentInfo.razOrderId,
+        razPaymentId: findOrder.paymentInfo.razPaymentId,
+        verified: true,
+      };
+
+      const updateOrder = await findOrder.save();
+      return sendResponse(req, res, 200, true, "success", response);
+    }
+    // const updateOrder = await Order.findByIdAndUpdate(
+    //   order_id,
+    //   {
+    //     $set: {
+    //       "paymentInfo.status": "Paid",
+    //       "paymentInfo.razorpay": {
+    //         ...updateOrder.paymentInfo.razorpay,
+    //         verified: true,
+    //       },
+    //     },
+    //   },
+    //   { new: true }
+    // );
   }
 
   return sendResponse(req, res, 200, false, "error", response);

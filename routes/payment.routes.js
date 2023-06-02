@@ -2,8 +2,9 @@ import express from "express";
 import { onlyAuthorized } from "../middleware/authHandler.js";
 import {
   generateOrderId,
-  processPayment,
-  sendStripeApiKey,
+  // processPayment,
+  // sendStripeApiKey,
+  verifyPayment,
 } from "../controllers/payment.controller.js";
 
 const router = express.Router();
@@ -15,5 +16,6 @@ router.get("/create/:id", onlyAuthorized, generateOrderId);
 
 // router.post("/checkout", onlyAuthorized, checkout);
 // router.post("/verification", onlyAuthorized, paymentVerification);
+router.post("/verification", onlyAuthorized, verifyPayment);
 
 export default router;

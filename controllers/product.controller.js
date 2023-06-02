@@ -164,7 +164,7 @@ export const getProductBySlug = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const getAllProducts = expressAsyncHandler(async (req, res, next) => {
-  const products = await Product.find().lean();
+  const products = await Product.find().populate("color").lean();
 
   if (products) return sendResponse(req, res, 200, true, "success", products);
 
@@ -195,15 +195,55 @@ export const getCategoryProducts = expressAsyncHandler(
           "category.slug": slug,
         },
       },
-    ]).lean();
+    ]);
 
     if (products) {
-      return sendResponse(req, res, 200, true, "success", products);
+      if (products.length > 0) {
+        return sendResponse(req, res, 200, true, "success", products);
+      } else {
+        return next(
+          createError(400, "No products found for the specified category.")
+        );
+      }
     }
 
     return next(createError(400, "unknown error."));
   }
 );
+
+export const getBrandProducts = expressAsyncHandler(async (req, res, next) => {
+  const slug = req.params.id;
+  const products = await Product.aggregate([
+    {
+      $lookup: {
+        from: "brands",
+        localField: "brand",
+        foreignField: "_id",
+        as: "brand",
+      },
+    },
+    {
+      $unwind: "$brand",
+    },
+    {
+      $match: {
+        "brand.slug": slug,
+      },
+    },
+  ]);
+
+  if (products) {
+    if (products.length > 0) {
+      return sendResponse(req, res, 200, true, "success", products);
+    } else {
+      return next(
+        createError(400, "No products found for the specified brand.")
+      );
+    }
+  }
+
+  return next(createError(400, "unknown error."));
+});
 
 export const getPopularProducts = expressAsyncHandler(
   async (req, res, next) => {
@@ -212,7 +252,7 @@ export const getPopularProducts = expressAsyncHandler(
       .populate("brand")
       .sort("-sold, -rating")
       .populate({ path: "category", select: "_id title slug" })
-      .limit(50)
+      .limit(6)
       .lean()
       .exec();
 
@@ -286,7 +326,7 @@ export const addReview = expressAsyncHandler(async (req, res, next) => {
 
     const addedReview = await product.save();
     if (addedReview)
-      return sendResponse(req, res, 200, true, "success", addedReview);
+      return sendResponse(req, res, 200, true, "success", addedReview._doc);
   }
 
   return next(createError(400, "Unknown Error."));
@@ -342,6 +382,7 @@ export const editReview = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const deleteReview = expressAsyncHandler(async (req, res, next) => {
+  const user = req.user;
   const id = req.params.id;
   const reviewId = req.body.reviewId;
 
@@ -361,7 +402,7 @@ export const deleteReview = expressAsyncHandler(async (req, res, next) => {
 
   const existingReview = product.reviews[reviewIndex];
 
-  if (existingReview.postedBy.toString() !== req.body.postedBy.toString()) {
+  if (existingReview.postedBy._id?.toString() !== user._id?.toString()) {
     return next(
       createError(401, "Unauthorized: Review can only be deleted by the author")
     );

@@ -63,7 +63,7 @@ export const uploadImages = expressAsyncHandler(async (req, res, next) => {
 
   for (const file of files) {
     const { path } = file;
-    const fileData = await uploader(file.path, "products");
+    const fileData = await uploader(file.path, "images");
 
     if (fileData) {
       data.push(fileData);

@@ -6,6 +6,8 @@ import {
   logout,
   resetPassword,
   verifyUser,
+  toggleWishlist,
+  getWishlist,
 } from "../controllers/auth.controller.js";
 import { onlyAuthorized } from "../middleware/authHandler.js";
 
@@ -18,6 +20,8 @@ router.put("/reset-password/:token", resetPassword);
 // router.get("/refreshToken", refreshToken);
 // router.get("/verifyToken", verifyToken);
 // router.get("/verifyUser", onlyAuthorized, verifyUser);
+router.put("/wishlist", onlyAuthorized, toggleWishlist);
+router.get("/wishlist", onlyAuthorized, getWishlist);
 router.get("/verify-user", onlyAuthorized, verifyUser);
 router.get("/logout", logout);
 

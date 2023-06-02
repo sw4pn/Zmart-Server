@@ -20,6 +20,7 @@ import couponRouter from "./routes/coupon.routes.js";
 import uploadRouter from "./routes/upload.routes.js";
 import orderRouter from "./routes/order.routes.js";
 import cartRouter from "./routes/cart.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 4000;
@@ -42,6 +43,7 @@ app.use("/api/coupons", couponRouter);
 app.use("/api/uploads", uploadRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/carts", cartRouter);
+app.use("/api/payments", paymentRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

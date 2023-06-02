@@ -6,6 +6,7 @@ import { createError } from "../middleware/errorHandler.js";
 import Color from "../model/Color.js";
 import Coupon from "../model/Coupon.js";
 import { v4 as uuidv4 } from "uuid";
+import User from "../model/User.js";
 
 // Generate the order ID
 function generateOrderId() {
@@ -30,7 +31,7 @@ export const createOrder = expressAsyncHandler(async (req, res, next) => {
     ? (req.body.taxPrice * totalPrice) / 100
     : 0.18 * totalPrice;
 
-  const shippingPrice = req.body.shippingPrice ? req.body.shippingPrice : 0;
+  const shippingPrice = totalPrice > 499 ? 0 : 50;
 
   const totalAmount = totalPrice + taxPrice + shippingPrice;
 
@@ -39,6 +40,7 @@ export const createOrder = expressAsyncHandler(async (req, res, next) => {
       name: req.body.coupon.toUpperCase(),
       isActive: true,
     }).lean();
+
     // check date expiry  coupon.expire
     if (new Date(coupon.expire) > new Date()) {
       req.body.finalAmount = Math.ceil(
@@ -68,6 +70,16 @@ export const createOrder = expressAsyncHandler(async (req, res, next) => {
   });
 
   if (order) {
+    const cartUser = await User.findById(orderedBy);
+
+    cartUser.cart = {
+      products: [],
+      totalPrice: 0,
+      totalAfterDiscount: 0,
+    };
+
+    const saveUser = await cartUser.save();
+
     return sendResponse(
       req,
       res,
@@ -86,10 +98,16 @@ export const getOrder = expressAsyncHandler(async (req, res, next) => {
   validateMongoId(id);
 
   const order = await Order.findById(id)
-    // .populate({
-    //   path: "products.product",
-    //   select: "_id images title",
-    // })
+    .populate([
+      {
+        path: "orderItems.color",
+        select: "_id value title",
+      },
+      {
+        path: "orderItems.product",
+        select: "_id thumbnail title",
+      },
+    ])
     .lean();
 
   if (order) return sendResponse(req, res, 200, true, "success", order);
@@ -147,7 +165,9 @@ export const getAllOrders = expressAsyncHandler(async (req, res, next) => {
 
 export const getUserOrders = expressAsyncHandler(async (req, res, next) => {
   const userId = req.user._id;
-  const orders = await Order.find({ orderedBy: userId }).lean();
+  const orders = await Order.find({ orderedBy: userId })
+    .sort({ createdAt: -1 })
+    .lean();
 
   if (orders) return sendResponse(req, res, 200, true, "success", orders);
 

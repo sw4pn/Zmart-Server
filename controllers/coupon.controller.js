@@ -99,7 +99,16 @@ export const validateCoupon = expressAsyncHandler(async (req, res, next) => {
   }
   const coupon = await Coupon.findOne({ name: couponCode }).lean();
 
-  if (coupon) return sendResponse(req, res, 200, true, "success", coupon);
+  if (coupon) {
+    const active = coupon.isActive;
+    const validity = new Date(coupon.expire) > new Date();
+
+    if (active && validity) {
+      return sendResponse(req, res, 200, true, "success", coupon);
+    }
+
+    return next(createError(400, "Coupon is expired."));
+  }
 
   return next(createError(400, "x Invalid coupon code."));
 });

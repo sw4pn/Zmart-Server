@@ -14,6 +14,7 @@ const router = express.Router();
 router.post("/", onlyAuthorized, onlyAdmin, createColor);
 router.put("/:id", onlyAuthorized, onlyAdmin, updateColor);
 router.delete("/:id", onlyAuthorized, onlyAdmin, deleteColor);
+
 router.get("/:id", getColor);
 router.get("/", getAllColors);
 

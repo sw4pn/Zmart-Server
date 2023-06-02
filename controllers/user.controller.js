@@ -143,12 +143,13 @@ export const updatePassword = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const changePassword = expressAsyncHandler(async (req, res, next) => {
-  const { id } = req.user;
+  const id = req.user._id;
   const { password } = req.body;
   const { newPassword } = req.body;
 
-  const user = await User.findById(id);
-  const checkPassword = await bcrypt.compare(password, user.password);
+  const user = await User.findById(id).select("password");
+  console.log(password, user.password);
+  const checkPassword = await bcrypt.compareSync(password, user.password);
 
   if (checkPassword) {
     const salt = bcrypt.genSaltSync(10);

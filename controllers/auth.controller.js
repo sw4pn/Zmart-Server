@@ -170,3 +170,69 @@ export const verifyUser = expressAsyncHandler(async (req, res, next) => {
 
   return sendResponse(req, res, 200, true, "success", userData);
 });
+
+export const getWishlist = expressAsyncHandler(async (req, res, next) => {
+  const id = req.user._id;
+  const user = req.user;
+
+  const wishlist = user?.wishlist;
+
+  if (wishlist) return sendResponse(req, res, 200, true, "success", wishlist);
+
+  return next(createError(400, "unknown error."));
+});
+
+export const toggleWishlist = expressAsyncHandler(async (req, res, next) => {
+  const id = req.user._id;
+  const { productId } = req.body;
+
+  console.log(productId);
+
+  const user = req.user;
+
+  const alreadyAdded = user.wishlist.find(
+    (item) => item._id.toString() === productId
+  );
+
+  if (alreadyAdded) {
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        $pull: {
+          wishlist: productId,
+        },
+      },
+      { new: true }
+    ).lean();
+
+    if (updatedUser)
+      return sendResponse(
+        req,
+        res,
+        200,
+        true,
+        "Product removed from wishlist.",
+        updatedUser
+      );
+  } else {
+    const addedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        $push: { wishlist: productId },
+      },
+      { new: true }
+    ).lean();
+
+    if (addedUser)
+      return sendResponse(
+        req,
+        res,
+        200,
+        true,
+        "Product added to wishlist.",
+        addedUser
+      );
+  }
+
+  return next(createError(400, "Unknown error occurred."));
+});

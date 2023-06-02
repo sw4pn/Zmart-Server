@@ -27,7 +27,25 @@ export const onlyAuthorized = expressAsyncHandler(async (req, res, next) => {
     if (!decoded)
       return next(createError(401, "Token expired! Please login again."));
 
-    const user = await User.findById(decoded?.id).lean();
+    const user = await User.findById(decoded?.id)
+      .populate({
+        path: "cart.products",
+        populate: [
+          {
+            path: "product",
+            select: "title price discount thumbnail slug",
+          },
+          {
+            path: "color",
+            select: "title value",
+          },
+        ],
+      })
+      .populate({
+        path: "wishlist",
+        select: "title price thumbnail discount slug",
+      })
+      .lean();
 
     if (!user) {
       return next(createError(401, "Unauthorized!"));
