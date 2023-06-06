@@ -164,7 +164,11 @@ export const getProductBySlug = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const getAllProducts = expressAsyncHandler(async (req, res, next) => {
-  const products = await Product.find().populate("color").lean();
+  const products = await Product.find()
+    .populate("color")
+    .populate("brand")
+    .populate("category")
+    .lean();
 
   if (products) return sendResponse(req, res, 200, true, "success", products);
 

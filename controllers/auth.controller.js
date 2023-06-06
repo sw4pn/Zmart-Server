@@ -6,6 +6,7 @@ import { createError } from "../middleware/errorHandler.js";
 import generateRefreshToken from "../config/refreshToken.js";
 import sendResponse from "../utils/responseHandler.js";
 import { sendEmail } from "../utils/emailHandler.js";
+import { validateMongoId } from "../utils/validateMongoId.js";
 
 export const loginUser = expressAsyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -175,6 +176,7 @@ export const getWishlist = expressAsyncHandler(async (req, res, next) => {
 export const toggleWishlist = expressAsyncHandler(async (req, res, next) => {
   const id = req.user._id;
   const { productId } = req.body;
+  validateMongoId(productId);
 
   const user = req.user;
 
