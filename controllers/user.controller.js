@@ -9,8 +9,6 @@ export const createUser = expressAsyncHandler(async (req, res, next) => {
   const { email, firstName, lastName } = req.body;
   const userPassword = req.body?.password;
 
-  console.log(email, firstName, lastName, userPassword);
-
   if (!email || !firstName || !lastName || !userPassword)
     return next(createError(400, "All fields are required."));
 
@@ -148,7 +146,7 @@ export const changePassword = expressAsyncHandler(async (req, res, next) => {
   const { newPassword } = req.body;
 
   const user = await User.findById(id).select("password");
-  console.log(password, user.password);
+
   const checkPassword = await bcrypt.compareSync(password, user.password);
 
   if (checkPassword) {

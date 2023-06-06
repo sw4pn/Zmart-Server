@@ -6,7 +6,6 @@ import {
   getProduct,
   getAllProducts,
   updateProduct,
-  addToWishlist,
   addReview,
   deleteProduct,
   getPopularProducts,
@@ -15,10 +14,10 @@ import {
   cleanProductSlug,
   getProductBySlug,
   getCategoryProducts,
-  getQueryProducts,
   editReview,
   deleteReview,
   getBrandProducts,
+  searchProducts,
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
@@ -33,6 +32,8 @@ router.delete("/:id", onlyAuthorized, onlyAdmin, deleteProduct);
 router.get("/popular", getPopularProducts);
 router.get("/featured", getFeaturedProducts);
 router.get("/special", getSpecialDeals);
+
+router.get("/search/:query", searchProducts);
 
 router.get("/clean-slug", cleanProductSlug);
 router.get("/slug/:slug", getProductBySlug);

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-// import mongooseSequence from "mongoose-sequence";
 
 const productSchema = new mongoose.Schema(
   {

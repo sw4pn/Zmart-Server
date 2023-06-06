@@ -16,7 +16,6 @@ export const createBrand = expressAsyncHandler(async (req, res, next) => {
 
   if (brand) return next(createError(400, "Brand Already Exists."));
 
-  console.log(req.body.slug);
   const newBrand = await Brand.create(req.body);
 
   if (newBrand)
@@ -45,9 +44,7 @@ export const updateBrand = expressAsyncHandler(async (req, res, next) => {
     $or: [{ title: req.body.title }, { slug: req.body.slug }],
   }).lean();
 
-  console.log(brand._id.toString(), id.toString());
-
-  if (brand && brand._id.toString() !== id.toString()) {
+  if (brand && brand._id.toString() !== id) {
     return next(createError(400, "Brand already exists."));
   }
 

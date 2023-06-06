@@ -3,9 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// import { fileURLToPath } from "url";
-// import path, { dirname } from "path";
-
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import connectDB from "./config/connectDB.js";
 import corsOptions from "./config/corsOptions.js";

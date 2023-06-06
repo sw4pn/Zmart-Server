@@ -15,7 +15,6 @@ export const loginUser = expressAsyncHandler(async (req, res, next) => {
   if (!user) return next(createError(404, "User not found"));
 
   const checkPassword = await bcrypt.compare(password, user.password);
-  console.log(checkPassword, user.password);
 
   if (user && checkPassword) {
     // --- generate refresh token
@@ -64,15 +63,6 @@ export const forgotPassword = expressAsyncHandler(async (req, res, next) => {
 
   if (!user)
     return next(createError(400, "No user exist with this email address."));
-
-  // const updateToken = await User.findByIdAndUpdate(
-  //   user._id,
-  //   {
-  //     passwordResetToken,
-  //     passwordResetExpires,
-  //   },
-  //   { new: true }
-  // );
 
   const resetToken = await User.getResetPasswordToken();
 
@@ -185,8 +175,6 @@ export const getWishlist = expressAsyncHandler(async (req, res, next) => {
 export const toggleWishlist = expressAsyncHandler(async (req, res, next) => {
   const id = req.user._id;
   const { productId } = req.body;
-
-  console.log(productId);
 
   const user = req.user;
 

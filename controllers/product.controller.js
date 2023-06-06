@@ -502,3 +502,23 @@ export const cleanProductSlug = expressAsyncHandler(async (req, res, next) => {
     "Product slugs cleaned successfully."
   );
 });
+
+export const searchProducts = expressAsyncHandler(async (req, res, next) => {
+  const query = req.params.query;
+
+  const products = await Product.find(
+    { title: { $regex: new RegExp(query), $options: "is" } },
+    // { title: { $regex: new RegExp(query), $options: "is" }, isActive: true },
+    { title: 1, slug: 1, thumbnail: 1, price: 1, discount: 1, _id: 0 }
+  );
+
+  if (products.length <= 0) {
+    return next(createError(404, "No product found."));
+  }
+  if (products.length > 0)
+    return sendResponse(req, res, 200, true, "success", { products });
+
+  return next(
+    createError(400, "Your request could not be processed. Please try again.")
+  );
+});
