@@ -39,8 +39,6 @@ export const loginUser = expressAsyncHandler(async (req, res, next) => {
       maxAge: 72 * 60 * 60 * 1000,
       sameSite: "None",
       secure: true,
-      path: "/",
-      domain: ".netlify.app",
     });
 
     // --- get and return data
