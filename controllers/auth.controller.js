@@ -41,14 +41,6 @@ export const loginUser = expressAsyncHandler(async (req, res, next) => {
       secure: true,
     });
 
-    const tryCookie = res.cookie("accessToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-      sameSite: "None",
-      domain: "zmart-ecom.netlify.app",
-      secure: true,
-    });
-
     // --- get and return data
     if (!setCookie)
       return next(createError(400, "Error while setting refresh token."));
