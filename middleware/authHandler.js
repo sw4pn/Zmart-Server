@@ -7,13 +7,13 @@ import { createError } from "./errorHandler.js";
 const getBearerToken = (req) => {
   const bearerHeader = req.headers["authorization"];
 
-  if (typeof bearerHeader !== undefined) {
+  if (bearerHeader && typeof bearerHeader !== undefined) {
     const bearer = bearerHeader.split(" ");
 
     return bearer[1];
   }
 
-  return undefined;
+  return null;
 };
 
 export const onlyAuthorized = expressAsyncHandler(async (req, res, next) => {
