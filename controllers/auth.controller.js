@@ -40,7 +40,7 @@ export const loginUser = expressAsyncHandler(async (req, res, next) => {
       sameSite: "None",
       secure: true,
       path: "/",
-      domain: "zmart-ecom.netlify.app",
+      domain: ".netlify.app",
     });
 
     // --- get and return data
